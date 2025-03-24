@@ -1,1 +1,1 @@
-# inspecto-web
+# InspectoWeb
