@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./apps/server
+    container_name: inspectoweb-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./apps/server:/app
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/inspectoweb
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - db
+      - redis
+    networks:
+      - inspectoweb-network
+
+  client:
+    build:
+      context: ./apps/www
+    container_name: inspectoweb-client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/www:/app
+    networks:
+      - inspectoweb-network
+    depends_on:
+      - server
+
+  db:
+    image: postgres:latest
+    container_name: inspectoweb-db
+    environment:
+      POSTGRES_DB: inspectoweb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inspectoweb-network
+
+  redis:
+    image: redis:alpine
+    container_name: inspectoweb-redis
+    networks:
+      - inspectoweb-network
+
+networks:
+  inspectoweb-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
